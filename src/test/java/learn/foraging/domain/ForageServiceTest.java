@@ -76,4 +76,17 @@ class ForageServiceTest {
         List<Forage> forages = service.findByDate(LocalDate.of(2020,6,26));
         assertEquals(1, forages.size());
     }
+
+    @Test
+    void shouldNotAddDuplicateForage() throws DataException {
+        Forage forage = new Forage();
+        forage.setId("498604db-b6d6-4599-a503-3d8190fda823");
+        forage.setDate(LocalDate.of(2020, 6, 26));
+        forage.setForager(ForagerRepositoryDouble.FORAGER);
+        forage.setItem(ItemRepositoryDouble.ITEM);
+        forage.setKilograms(1.25);
+
+        Result<Forage> result = service.add(forage);
+        assertFalse(result.isSuccess());
+    }
 }

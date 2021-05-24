@@ -122,7 +122,6 @@ public class Controller {
             String successMessage = String.format("Forager %s created.", result.getPayload().getId());
             view.displayStatus(true, successMessage);
         }
-        view.enterToContinue();
     }
 
     private void addForage() throws DataException {
@@ -158,40 +157,45 @@ public class Controller {
 
     private void reportKgPerItem() throws DataException{
         view.displayHeader(MainMenuOption.REPORT_KG_PER_ITEM.getMessage());
-        LocalDate forageDate = view.getForageDate();
-        List<Forage> foragesByDate = forageService.findByDate(forageDate);
-        if(foragesByDate == null ||foragesByDate.size() == 0){
+        LocalDate forageDate = view.getForageDate(); //get date from view
+        List<Forage> foragesByDate = forageService.findByDate(forageDate); //get list of forages on date
+        if(foragesByDate == null ||foragesByDate.size() == 0){ //if none found, return
             view.displayStatus(false, "No forages on " + forageDate.toString());
             return;
         }
 
+        //create list of distinct items on date
         List<Item> itemsOnDate = foragesByDate.stream()
                 .map(Forage::getItem)
                 .distinct()
                 .collect(Collectors.toList());
 
+        //create map of distinct items to kg value
         HashMap<Item, Double> totals = new HashMap<>();
         for(Item item : itemsOnDate){
             totals.put(item, 0.0);
         }
 
+        //loop through list of forages and add kg to appropriate item total
         for(Forage forage : foragesByDate){
             double currentValue = totals.get(forage.getItem());
             totals.put(forage.getItem(), currentValue+forage.getKilograms());
         }
 
+        //display totals in view
         view.displayForageTotals(totals, forageDate);
     }
 
     private void reportValueByCategory(){
         view.displayHeader(MainMenuOption.REPORT_CATEGORY_VALUE.getMessage());
-        LocalDate forageDate = view.getForageDate();
-        List<Forage> foragesByDate = forageService.findByDate(forageDate);
-        if(foragesByDate == null ||foragesByDate.size() == 0){
+        LocalDate forageDate = view.getForageDate(); //get date from view
+        List<Forage> foragesByDate = forageService.findByDate(forageDate); //get forages on date
+        if(foragesByDate == null ||foragesByDate.size() == 0){ //if none found, return
             view.displayStatus(false, "No forages on " + forageDate.toString());
             return;
         }
 
+        //create map of categories to totals
         HashMap<Category, BigDecimal> totals = new HashMap<>();
         for(Category c : Category.values()){
             totals.put(c, BigDecimal.ZERO);
